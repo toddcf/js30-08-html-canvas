@@ -1,1 +1,1 @@
-# js30-08-html-canvas
+# JavaScript30 #8: HTML Canvas
