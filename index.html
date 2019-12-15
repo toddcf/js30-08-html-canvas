@@ -13,88 +13,85 @@
     const canvas = document.getElementById('draw');
     const ctx = canvas.getContext('2d');
 
-    // Resize canvas:
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const drawing = {
+      // Only draw when clicking down:
+      isDrawing: false,
+      hue: 0,
+      // Default direction to "true", which will increment lineWidth:
+      direction: true,
+      // Handle mouse drawing:
+      draw: (e) => {
+        // Only run if mousedown:
+        if(drawing.isDrawing) {
 
-    ctx.strokeStyle = '#BADASS';
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.lineWidth = 1;
+          // Cycle through the color spectrum:
+          ctx.strokeStyle = `hsl(${drawing.hue}, 100%, 50%)`;
 
-    // Blend mode as you draw over previous lines (commented out because I don't like the effect):
-    // ctx.globalCompositeOperation = 'multiply';
+          ctx.beginPath();
 
-    // Colors:
-    let hue = 0;
+          // Start from:
+          ctx.moveTo(lastX, lastY);
 
-    // Default direction to "true", which will increment lineWidth:
-    let direction = true;
+          // Go to:
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
 
-    // Only draw when clicking down:
-    let isDrawing = false;
+          // When done drawing, set to most recent pixel and increment the hue:
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+          drawing.hue++;
 
-    // Set default starting points:
-    let lastX = 0;
-    let lastY = 0;
+          // But reset hue after 360 to it doesn't increment indefinitely:
+          if(drawing.hue >= 360) {
+            drawing.hue = 0;
+          }
 
-    // Handle mouse drawing:
-    function draw(e) {
-      // Only run if mousedown:
-      if(isDrawing) {
+          // Increment  lineWidth from 1 to 100 and back down again as you draw:
+          if(ctx.lineWidth >= 100 || ctx.lineWidth <= 1) {
+            // Flip the direction:
+            drawing.direction = !drawing.direction;
+          }
 
-        // Cycle through the color spectrum:
-        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
-
-        ctx.beginPath();
-
-        // Start from:
-        ctx.moveTo(lastX, lastY);
-
-        // Go to:
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke();
-
-        // When done drawing, set to most recent pixel and increment the hue:
-        lastX = e.offsetX;
-        lastY = e.offsetY;
-        hue++;
-
-        // But reset hue after 360 to it doesn't increment indefinitely:
-        if(hue >= 360) {
-          hue = 0;
+          if(drawing.direction) {
+            ctx.lineWidth++;
+          }
+          else {
+            ctx.lineWidth--;
+          }
         }
+      },
+      init: () => {
+        // Call the draw function whenever mouse is moving:
+        canvas.addEventListener('mousemove', drawing.draw);
 
-        // Increment  lineWidth from 1 to 100 and back down again as you draw:
-        if(ctx.lineWidth >= 100 || ctx.lineWidth <= 1) {
-          // Flip the direction:
-          direction = !direction;
-        }
+        // drawing.isDrawing is only set to true during mousedown:
+        canvas.addEventListener('mousedown', (e) => {
+          drawing.isDrawing = true;
 
-        if(direction) {
-          ctx.lineWidth++;
-        }
-        else {
-          ctx.lineWidth--;
-        }
+          // Set starting point to the mouse position before drawing:
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+        });
+        canvas.addEventListener('mouseup', () => drawing.isDrawing = false);
+
+        // Stop drawing if mouse goes out of bounds:
+        canvas.addEventListener('mouseout', () => drawing.isDrawing = false);
+
+        // Resize canvas:
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        ctx.strokeStyle = '#BADASS';
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 1;
+
+        // Blend mode as you draw over previous lines (commented out because I don't like the effect):
+        // ctx.globalCompositeOperation = 'multiply';
       }
     }
 
-    // Call the draw function whenever mouse is moving:
-    canvas.addEventListener('mousemove', draw);
-
-    // isDrawing is only set to true during mousedown:
-    canvas.addEventListener('mousedown', (e) => {
-      isDrawing = true;
-
-      // Set starting point to the mouse position before drawing:
-      lastX = e.offsetX;
-      lastY = e.offsetY;
-    });
-    canvas.addEventListener('mouseup', () => isDrawing = false);
-
-    // Stop drawing if mouse goes out of bounds:
-    canvas.addEventListener('mouseout', () => isDrawing = false);
+    drawing.init();
 
   </script>
 

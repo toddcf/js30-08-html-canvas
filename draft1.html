@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML5 Canvas</title>
+</head>
+<body>
+  
+  <canvas id="draw" width="800" height="800"></canvas>
+  
+  <script>
+
+    const canvas = document.getElementById('draw');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas:
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    ctx.strokeStyle = '#BADASS';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 1;
+
+    // Blend mode as you draw over previous lines (commented out because I don't like the effect):
+    // ctx.globalCompositeOperation = 'multiply';
+
+    // Colors:
+    let hue = 0;
+
+    // Default direction to "true", which will increment lineWidth:
+    let direction = true;
+
+    // Only draw when clicking down:
+    let isDrawing = false;
+
+    // Set default starting points:
+    let lastX = 0;
+    let lastY = 0;
+
+    // Handle mouse drawing:
+    function draw(e) {
+      // Only run if mousedown:
+      if(isDrawing) {
+
+        // Cycle through the color spectrum:
+        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+
+        ctx.beginPath();
+
+        // Start from:
+        ctx.moveTo(lastX, lastY);
+
+        // Go to:
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+
+        // When done drawing, set to most recent pixel and increment the hue:
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+        hue++;
+
+        // But reset hue after 360 to it doesn't increment indefinitely:
+        if(hue >= 360) {
+          hue = 0;
+        }
+
+        // Increment  lineWidth from 1 to 100 and back down again as you draw:
+        if(ctx.lineWidth >= 100 || ctx.lineWidth <= 1) {
+          // Flip the direction:
+          direction = !direction;
+        }
+
+        if(direction) {
+          ctx.lineWidth++;
+        }
+        else {
+          ctx.lineWidth--;
+        }
+      }
+    }
+
+    // Call the draw function whenever mouse is moving:
+    canvas.addEventListener('mousemove', draw);
+
+    // isDrawing is only set to true during mousedown:
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+
+      // Set starting point to the mouse position before drawing:
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+    });
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+
+    // Stop drawing if mouse goes out of bounds:
+    canvas.addEventListener('mouseout', () => isDrawing = false);
+
+  </script>
+
+  <style>
+    html, body {
+      margin: 0;
+    }
+  </style>
+
+</body>
+</html>
